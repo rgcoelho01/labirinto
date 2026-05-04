@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Labirinto</title>
+    <style>
+        :root {
+            --bg-color: #f7f6f2;
+            --board-light: #f3f0ec;
+            --board-dark: #dcd9d5;
+            --primary: #01696f;
+            --primary-hover: #0c4e54;
+            --text-color: #28251d;
+            --panel-bg: #ffffff;
+            --border: #dcd9d5;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 12px;
+            touch-action: manipulation;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: clamp(18px, 5vw, 26px);
+            margin: 0 0 6px 0;
+        }
+
+        .level-info {
+            font-size: clamp(14px, 4vw, 18px);
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .level-selector {
+            margin-top: 8px;
+            padding: 6px 10px;
+            font-size: clamp(13px, 3.5vw, 16px);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        /* ── LAYOUT DESKTOP: lado a lado ── */
+        .game-area {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        /* ── TABULEIRO ── */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: min(480px, 100%);
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+            border: 3px solid var(--text-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            background-color: var(--board-light);
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell.dark { background-color: var(--board-dark); }
+
+        .player, .target, .obstacle {
+            width: 88%;
+            height: 88%;
+            object-fit: cover;
+        }
+
+        /* ── PAINÉIS DE LOG (desktop) ── */
+        .panels {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tab-bar { display: none; } /* escondida no desktop */
+
+        .panel {
+            flex: 1;
+            min-width: 0;
+            height: 480px;
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            display: block;
+        }
+
+        .panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+
+        #moves-log div,
+        #code-log div {
+            padding: 4px 0;
+            border-bottom: 1px solid #f0eeeb;
+            font-size: 13px;
+        }
+
+        /* ── CONTROLES ── */
+        .controls-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 64px);
+            grid-template-rows: repeat(2, 64px);
+            gap: 10px;
+        }
+
+        button.arrow-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 26px;
+            cursor: pointer;
+            transition: background-color 0.15s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        button.arrow-btn:active {
+            background-color: var(--primary-hover);
+            transform: scale(0.92);
+        }
+
+        #btn-up    { grid-column: 2; grid-row: 1; }
+        #btn-left  { grid-column: 1; grid-row: 2; }
+        #btn-down  { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+
+        /* ════════════════════════════════════
+           MOBILE  ≤ 640px
+           Layout vertical + abas nos painéis
+        ════════════════════════════════════ */
+        @media (max-width: 640px) {
+
+            body { padding: 8px 8px 20px; }
+
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #board {
+                width: min(94vw, 400px);
+            }
+
+            .panels {
+                flex-direction: column;
+                width: min(94vw, 400px);
+                gap: 0;
+            }
+
+            /* Barra de abas */
+            .tab-bar {
+                display: flex;
+                border: 2px solid var(--border);
+                border-bottom: none;
+                border-radius: 10px 10px 0 0;
+                overflow: hidden;
+            }
+
+            .tab-btn {
+                flex: 1;
+                padding: 9px 4px;
+                background: var(--board-light);
+                border: none;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                color: #777;
+                transition: background 0.15s, color 0.15s;
+            }
+
+            .tab-btn.active {
+                background: white;
+                color: var(--primary);
+            }
+
+            /* Painéis viram abas */
+            .panel {
+                height: 130px;
+                border-radius: 0 0 10px 10px;
+                display: none;
+                flex: none;
+            }
+
+            .panel.active { display: block; }
+            .panel h3 { display: none; }
+
+            /* Botões maiores para toque */
+            .controls {
+                grid-template-columns: repeat(3, 76px);
+                grid-template-rows: repeat(2, 76px);
+                gap: 12px;
+            }
+
+            button.arrow-btn {
+                font-size: 32px;
+                border-radius: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🧩 Labirinto Maker</h1>
+        <div class="level-info" id="level-display">Nível 1</div>
+        <select id="level-selector" class="level-selector">
+            <option value="0">Tabuleiro 1</option>
+            <option value="1">Tabuleiro 2 (Bloqueado)</option>
+            <option value="2">Tabuleiro 3 (Bloqueado)</option>
+        </select>
+    </div>
+
+    <div class="game-area">
+        <div id="board"></div>
+
+        <div class="panels">
+            <!-- Barra de abas (visível apenas no mobile) -->
+            <div class="tab-bar" id="tab-bar">
+                <button class="tab-btn active" data-tab="moves">📋 Movimentos</button>
+                <button class="tab-btn"        data-tab="code">💻 Código</button>
+            </div>
+
+            <div id="moves-container" class="panel active" data-panel="moves">
+                <h3>Movimentos</h3>
+                <div id="moves-log"></div>
+            </div>
+
+            <div id="code-container" class="panel" data-panel="code">
+                <h3>Código</h3>
+                <div id="code-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-wrapper">
+        <div class="controls">
+            <button id="btn-up"    class="arrow-btn">⬆️</button>
+            <button id="btn-left"  class="arrow-btn">⬅️</button>
+            <button id="btn-down"  class="arrow-btn">⬇️</button>
+            <button id="btn-right" class="arrow-btn">➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const boardSize = 8;
+        const codeLog  = document.getElementById('code-log');
+        const movesLog = document.getElementById('moves-log');
+        let moves = [];
+
+        const levels = [
+            {
+                name: "Iniciante",
+                target: {x:7, y:7},
+                obstacles: [{x:0,y:1},{x:1,y:4},{x:6,y:6},{x:3,y:2},{x:7,y:6}]
+            },
+            {
+                name: "Intermediário",
+                target: {x:7, y:7},
+                obstacles: [{x:1,y:0},{x:2,y:3},{x:5,y:5},{x:6,y:6},{x:5,y:7}]
+            },
+            {
+                name: "Avançado",
+                target: {x:7, y:7},
+                obstacles: [{x:1,y:0},{x:3,y:2},{x:0,y:5},{x:5,y:7},{x:7,y:5}]
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        let unlockedLevels    = 0;
+        let playerX = 0, playerY = 0;
+
+        const board         = document.getElementById('board');
+        const levelDisplay  = document.getElementById('level-display');
+        const levelSelector = document.getElementById('level-selector');
+
+        /* ── Abas mobile ── */
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelector(`.panel[data-panel="${target}"]`).classList.add('active');
+            });
+        });
+
+        /* ── Helpers ── */
+        function isMobile() { return window.innerWidth <= 640; }
+
+        function switchTab(tab) {
+            if (!isMobile()) return;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+            document.querySelector(`.panel[data-panel="${tab}"]`).classList.add('active');
+        }
+
+        function logMove(direction) {
+            moves.push(direction);
+            const div = document.createElement('div');
+            div.innerText = direction;
+            movesLog.appendChild(div);
+            movesLog.scrollTop = movesLog.scrollHeight;
+        }
+
+        function isObstacle(x, y) {
+            return levels[currentLevelIndex].obstacles.some(o => o.x === x && o.y === y);
+        }
+
+        function updateSelector() {
+            for (let i = 0; i < levelSelector.options.length; i++) {
+                if (i <= unlockedLevels) {
+                    levelSelector.options[i].disabled = false;
+                    levelSelector.options[i].text = `Tabuleiro ${i + 1}`;
+                } else {
+                    levelSelector.options[i].disabled = true;
+                    levelSelector.options[i].text = `Tabuleiro ${i + 1} (Bloqueado)`;
+                }
+            }
+            levelSelector.value = currentLevelIndex;
+        }
+
+        function generateCode() {
+            codeLog.innerHTML = '';
+            if (moves.length === 0) return;
+
+            let current = moves[0], count = 1;
+
+            for (let i = 1; i <= moves.length; i++) {
+                if (moves[i] === current) {
+                    count++;
+                } else {
+                    const line = document.createElement('div');
+                    line.innerText = count > 1 ? `REPETIR ${count}X ${current}` : current;
+                    codeLog.appendChild(line);
+                    current = moves[i];
+                    count = 1;
+                }
+            }
+            switchTab('code'); // no mobile vai para aba Código
+        }
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            playerX = 0; playerY = 0;
+            moves = [];
+            movesLog.innerHTML = '';
+            codeLog.innerHTML  = '';
+            levelDisplay.innerText = `Nível ${index + 1}: ${levels[index].name}`;
+            updateSelector();
+            renderBoard();
+            switchTab('moves');
+        }
+
+        levelSelector.addEventListener('change', e => loadLevel(parseInt(e.target.value)));
+
+        function renderBoard() {
+            board.innerHTML = '';
+            const t = levels[currentLevelIndex].target;
+
+            for (let y = 0; y < boardSize; y++) {
+                for (let x = 0; x < boardSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell ' + ((x + y) % 2 ? 'dark' : '');
+
+                    if (x === playerX && y === playerY) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem1.jpg'; img.className = 'player';
+                        cell.appendChild(img);
+                    } else if (x === t.x && y === t.y) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem2.jpg'; img.className = 'target';
+                        cell.appendChild(img);
+                    } else if (isObstacle(x, y)) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem3.jpg'; img.className = 'obstacle';
+                        cell.appendChild(img);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = playerX + dx;
+            const newY = playerY + dy;
+            const t    = levels[currentLevelIndex].target;
+
+            if (newX < 0 || newX >= boardSize || newY < 0 || newY >= boardSize) return;
+
+            if (isObstacle(newX, newY)) {
+                alert('Você bateu em um obstáculo!');
+                playerX = 0; playerY = 0;
+                moves = [];
+                movesLog.innerHTML = '';
+                renderBoard();
+                switchTab('moves');
+                return;
+            }
+
+            playerX = newX;
+            playerY = newY;
+            renderBoard();
+
+            if (playerX === t.x && playerY === t.y) {
+                generateCode();
+
+                if (currentLevelIndex >= unlockedLevels && currentLevelIndex < levels.length - 1) {
+                    unlockedLevels = currentLevelIndex + 1;
+                    updateSelector();
+                }
+
+                const isLast = currentLevelIndex === levels.length - 1;
+                const msg = isLast
+                    ? 'Parabéns! Você completou todos os níveis! 🏆'
+                    : `Parabéns! Tabuleiro ${currentLevelIndex + 2} desbloqueado! 🎉`;
+                alert(msg);
+            }
+        }
+
+        document.getElementById('btn-up').addEventListener('click',   () => { logMove('Cima');     movePlayer( 0,-1); });
+        document.getElementById('btn-down').addEventListener('click',  () => { logMove('Baixo');    movePlayer( 0, 1); });
+        document.getElementById('btn-left').addEventListener('click',  () => { logMove('Esquerda'); movePlayer(-1, 0); });
+        document.getElementById('btn-right').addEventListener('click', () => { logMove('Direita');  movePlayer( 1, 0); });
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp')    { logMove('Cima');     movePlayer( 0,-1); }
+            if (e.key === 'ArrowDown')  { logMove('Baixo');    movePlayer( 0, 1); }
+            if (e.key === 'ArrowLeft')  { logMove('Esquerda'); movePlayer(-1, 0); }
+            if (e.key === 'ArrowRight') { logMove('Direita');  movePlayer( 1, 0); }
+        });
+
+        loadLevel(0);
+    </script>
+</body>
+</html>
