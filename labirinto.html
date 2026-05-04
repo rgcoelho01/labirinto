@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto</title>
+    <style>
+        :root {
+            --bg-color: #f7f6f2;
+            --board-light: #f3f0ec;
+            --board-dark: #dcd9d5;
+            --primary: #01696f;
+            --primary-hover: #0c4e54;
+            --danger: #a12c7b;
+            --text-color: #28251d;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+
+        .level-info {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .level-selector {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid var(--board-dark);
+            background: white;
+            cursor: pointer;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            border: 4px solid var(--text-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: var(--board-light);
+            margin-bottom: 30px;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell.dark {
+            background-color: var(--board-dark);
+        }
+
+        .player, .target, .obstacle {
+            width: 90%;
+            height: 90%;
+        }
+
+        #code-container {
+            width: 220px;
+            height: 500px;
+            background: white;
+            border: 2px solid var(--board-dark);
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #code-log div {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        #moves-container {
+            width: 220px;
+            height: 500px;
+            background: white;
+            border: 2px solid var(--board-dark);
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #moves-log div {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button.arrow-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Labirinto Maker</h1>
+        <div class="level-info" id="level-display">Nível 1</div>
+        <select id="level-selector" class="level-selector">
+            <option value="0">Tabuleiro 1</option>
+            <option value="1">Tabuleiro 2 (Bloqueado)</option>
+            <option value="2">Tabuleiro 3 (Bloqueado)</option>
+        </select>
+    </div>
+    
+    <div class="game-area">
+        <div id="board"></div>
+
+        <div id="moves-container">
+            <h3>Movimentos</h3>
+            <div id="moves-log"></div>
+        </div>
+
+        <div id="code-container">
+            <h3>Código</h3>
+            <div id="code-log"></div>
+        </div>
+    </div>
+    <div class="controls">
+        <button id="btn-up" class="arrow-btn">⬆️</button>
+        <button id="btn-left" class="arrow-btn">⬅️</button>
+        <button id="btn-down" class="arrow-btn">⬇️</button>
+        <button id="btn-right" class="arrow-btn">➡️</button>
+    </div>
+
+    <script>
+        const boardSize = 8;
+        
+        const codeLog = document.getElementById('code-log');
+        let moves = [];
+
+        const levels = [
+            {
+                name: "Iniciante",
+                target: {x: 7, y: 7},
+                obstacles: [{x: 0, y: 1}, {x: 1, y: 4}, {x: 6, y: 6}, {x: 3, y: 2}, {x: 7, y: 6}]
+            },
+            {
+                name: "Intermediário",
+                target: {x: 7, y: 7},
+                obstacles: [{x: 1, y: 0}, {x: 2, y: 3}, {x: 5, y: 5}, {x: 6, y: 6}, {x: 5, y: 7}]
+            },
+            {
+                name: "Avançado",
+                target: {x: 7, y: 7},
+                obstacles: [{x: 1, y: 0}, {x: 3, y: 2}, {x: 0, y: 5}, {x: 5, y: 7}, {x: 7, y: 5}]
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        let unlockedLevels = 0;
+
+        let playerX = 0;
+        let playerY = 0;
+
+        const board = document.getElementById('board');
+        const levelDisplay = document.getElementById('level-display');
+        const levelSelector = document.getElementById('level-selector');
+        const movesLog = document.getElementById('moves-log');
+
+        function logMove(direction) {
+            moves.push(direction);
+
+            const div = document.createElement('div');
+            div.innerText = direction;
+            movesLog.appendChild(div);
+            movesLog.scrollTop = movesLog.scrollHeight;
+        }
+
+        function isObstacle(x, y) {
+            return levels[currentLevelIndex].obstacles.some(obs => obs.x === x && obs.y === y);
+        }
+
+        function updateSelector() {
+            for (let i = 0; i < levelSelector.options.length; i++) {
+                if (i <= unlockedLevels) {
+                    levelSelector.options[i].disabled = false;
+                    // Atualiza o texto removendo "(Bloqueado)" se desbloqueado
+                    levelSelector.options[i].text = `Tabuleiro ${i + 1}${i === 0 ? '' : ''}`;
+                } else {
+                    levelSelector.options[i].disabled = true;
+                    levelSelector.options[i].text = `Tabuleiro ${i + 1} (Bloqueado)`;
+                }
+            }
+            levelSelector.value = currentLevelIndex;
+        }
+
+        function generateCode() {
+            codeLog.innerHTML = '';
+
+            if (moves.length === 0) return;
+
+            let current = moves[0];
+            let count = 1;
+
+            for (let i = 1; i <= moves.length; i++) {
+                if (moves[i] === current) {
+                    count++;
+                } else {
+                    const line = document.createElement('div');
+                    
+                    if (count > 1) {
+                        line.innerText = `REPETIR ${count}X ${current}`;
+                    } else {
+                        line.innerText = current;
+                    }
+
+                    codeLog.appendChild(line);
+
+                    current = moves[i];
+                    count = 1;
+                }
+            }
+        }
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            playerX = 0;
+            playerY = 0;
+            moves = [];
+            movesLog.innerHTML = '';
+            codeLog.innerHTML = '';
+
+            levelDisplay.innerText = `Nível ${index + 1}: ${levels[index].name}`;
+            updateSelector();
+            renderBoard();
+        }
+
+        levelSelector.addEventListener('change', (e) => {
+            loadLevel(parseInt(e.target.value));
+        });
+
+        function renderBoard() {
+            board.innerHTML = ''; 
+            const currentTarget = levels[currentLevelIndex].target;
+            
+            for (let y = 0; y < boardSize; y++) {
+                for (let x = 0; x < boardSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell ' + ((x + y) % 2 ? 'dark' : '');
+                    
+                    if (x === playerX && y === playerY) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem1.jpg';
+                        img.className = 'player';
+                        cell.appendChild(img);
+                    } 
+                    else if (x === currentTarget.x && y === currentTarget.y) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem2.jpg';
+                        img.className = 'target';
+                        cell.appendChild(img);
+                    }
+                    else if (isObstacle(x, y)) {
+                        const img = document.createElement('img');
+                        img.src = 'imagem3.jpg';
+                        img.className = 'obstacle';
+                        cell.appendChild(img);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = playerX + dx;
+            const newY = playerY + dy;
+            const currentTarget = levels[currentLevelIndex].target;
+            
+            if (newX >= 0 && newX < boardSize && newY >= 0 && newY < boardSize) {
+
+                if (isObstacle(newX, newY)) {
+                    alert('Você bateu em um obstáculo!');
+                    playerX = 0;
+                    playerY = 0;
+                    moves = [];
+                    movesLog.innerHTML = '';
+                    renderBoard();
+                    return;
+                }
+
+                playerX = newX;
+                playerY = newY;
+                renderBoard();
+                
+                if (playerX === currentTarget.x && playerY === currentTarget.y) {
+                    generateCode();
+
+                    // ✅ CORREÇÃO: desbloqueia o próximo nível ao completar o atual
+                    if (currentLevelIndex >= unlockedLevels && currentLevelIndex < levels.length - 1) {
+                        unlockedLevels = currentLevelIndex + 1;
+                        updateSelector();
+                    }
+
+                    const isLast = currentLevelIndex === levels.length - 1;
+                    const msg = isLast
+                        ? 'Parabéns! Você completou todos os níveis! 🏆'
+                        : `Parabéns! Tabuleiro ${currentLevelIndex + 2} desbloqueado! 🎉`;
+                    alert(msg);
+                }
+            }
+        }
+
+        document.getElementById('btn-up').addEventListener('click', () => { logMove('Cima'); movePlayer(0, -1); });
+        document.getElementById('btn-down').addEventListener('click', () => { logMove('Baixo'); movePlayer(0, 1); });
+        document.getElementById('btn-left').addEventListener('click', () => { logMove('Esquerda'); movePlayer(-1, 0); });
+        document.getElementById('btn-right').addEventListener('click', () => { logMove('Direita'); movePlayer(1, 0); });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') { logMove('Cima'); movePlayer(0, -1); }
+            if (e.key === 'ArrowDown') { logMove('Baixo'); movePlayer(0, 1); }
+            if (e.key === 'ArrowLeft') { logMove('Esquerda'); movePlayer(-1, 0); }
+            if (e.key === 'ArrowRight') { logMove('Direita'); movePlayer(1, 0); }
+        });
+
+        loadLevel(0);
+    </script>
+</body>
+</html>
