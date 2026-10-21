@@ -13,6 +13,7 @@ body{background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;paddi
 main{max-width:940px;margin:auto}
 h1{font-size:clamp(20px,5vw,28px);margin:0 0 4px;text-align:center}
 .sub{text-align:center;color:var(--mut);margin:0 0 14px;font-size:14px}
+.sub a{color:var(--pr)}
 .game{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
 #board{display:grid;grid-template-columns:repeat(8,1fr);width:min(440px,100%);aspect-ratio:1;border:3px solid var(--tx);border-radius:6px}
 .cell{display:flex;align-items:center;justify-content:center;font-size:clamp(18px,5.4vw,30px);background:var(--c1)}
@@ -41,6 +42,7 @@ article h2{font-size:18px;color:var(--pr);margin:18px 0 6px}article h3{font-size
 <main>
 <h1>🌱 Caminho da Horta</h1>
 <p class="sub">Leve a água até a horta comunitária antes do pôr do sol. Cada escolha no caminho diz algo sobre o que você valoriza.</p>
+<p class="sub"><a href="index.html">Jogar a primeira versão: Labirinto Maker</a></p>
 <div class="game">
  <div id="board"></div>
  <div class="side">
@@ -64,7 +66,7 @@ article h2{font-size:18px;color:var(--pr);margin:18px 0 6px}article h3{font-size
 </ul>
 <h3>Implícitas</h3>
 <ul>
-<li><b>Não neutralidade do jogo:</b> quem projetou as situações escolheu quais dilemas existem (e quais não). “Chegar rápido” aparece como meta natural, mas é uma escolha de valor: a <b>Eficiência é um valor</b> e está no painel justamente para o estudante perceber isso.</li>
+<li><b>Não neutralidade do jogo:</b> O jogo foi projetado com situações específicas, nas quais a existência (ou não) de cada dilema foi uma escolha intencional. “Chegar rápido” aparece como meta natural, mas é uma escolha de valor: a <b>Eficiência é um valor</b> e está no painel justamente para o estudante perceber isso.</li>
 <li><b>Substituição da bomba:</b> no original, o erro “explode” e tudo recomeça: uma pedagogia punitiva, que aproxima erro de falha moral. Aqui o obstáculo é uma parede: errar gera informação e o estudante tenta de novo.</li>
 <li><b>Definição de “sucesso”:</b> chegar depois do pôr do sol tem consequência (a horta passa a noite com sede), mas o jogo não declara derrota. A pergunta final, “valeu a pena?”, devolve a avaliação ao sujeito.</li>
 <li><b>Não neutralidade do ensino:</b> o cenário (comunidade, cuidado, bem comum) já expressa valores do professor e da escola. Tornar isso discutível, e não escondido, é a proposta.</li>

@@ -49,6 +49,17 @@
             color: var(--primary);
         }
 
+        .version-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .version-link:hover,
+        .version-link:focus-visible {
+            color: var(--primary-hover);
+        }
+
         .level-selector {
             margin-top: 8px;
             padding: 6px 10px;
@@ -254,6 +265,7 @@
 
     <div class="header">
         <h1>🧩 Labirinto Maker</h1>
+        <a class="version-link" href="caminho-da-horta.html">Jogar a versão 2: Caminho da Horta</a>
         <div class="level-info" id="level-display">Nível 1</div>
         <select id="level-selector" class="level-selector">
             <option value="0">Tabuleiro 1</option>
@@ -303,17 +315,17 @@
             {
                 name: "Iniciante",
                 target: {x:7, y:7},
-                obstacles: [{x:0,y:1},{x:1,y:4},{x:6,y:6},{x:3,y:0},{x:7,y:6}]
+                obstacles: [{x:0,y:1},{x:1,y:4},{x:6,y:6},{x:3,y:2},{x:7,y:6}]
             },
             {
                 name: "Intermediário",
                 target: {x:7, y:7},
-                obstacles: [{x:1,y:0},{x:7,y:4},{x:5,y:5},{x:6,y:6},{x:5,y:7}]
+                obstacles: [{x:1,y:0},{x:2,y:3},{x:5,y:5},{x:6,y:6},{x:5,y:7}]
             },
             {
                 name: "Avançado",
                 target: {x:7, y:7},
-                obstacles: [{x:1,y:0},{x:3,y:2},{x:0,y:5},{x:6,y:7},{x:7,y:5}]
+                obstacles: [{x:1,y:0},{x:3,y:2},{x:0,y:5},{x:5,y:7},{x:7,y:5}]
             }
         ];
 
