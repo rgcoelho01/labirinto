@@ -15,10 +15,11 @@ h1{font-size:clamp(20px,5vw,28px);margin:0 0 4px;text-align:center}
 .sub{text-align:center;color:var(--mut);margin:0 0 14px;font-size:14px}
 .sub a{color:var(--pr)}
 .game{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.play-area{flex:0 1 440px;min-width:0;display:flex;flex-direction:column;align-items:center}
 #board{display:grid;grid-template-columns:repeat(8,1fr);width:min(440px,100%);aspect-ratio:1;border:3px solid var(--tx);border-radius:6px}
 .cell{display:flex;align-items:center;justify-content:center;font-size:clamp(18px,5.4vw,30px);background:var(--c1)}
 .cell.d{background:var(--c2)}.cell.w{background:var(--wall)}
-.side{flex:1;min-width:250px;max-width:400px;display:flex;flex-direction:column;gap:10px}
+.side{flex:1;min-width:min(250px,100%);max-width:400px;display:flex;flex-direction:column;gap:10px}
 .box{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
 .box h3{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pr)}
 #code{height:110px;overflow:auto;font:13px ui-monospace,monospace}
@@ -26,7 +27,7 @@ h1{font-size:clamp(20px,5vw,28px);margin:0 0 4px;text-align:center}
 .bar{flex:1;height:9px;background:var(--c2);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pr);width:0;transition:width .3s}
 #status{min-height:22px;font-size:13px;color:var(--mut)}
 .ctl{display:grid;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center;margin:14px 0}
-.ctl button{height:56px;font-size:22px;border:0;border-radius:12px;background:var(--pr);color:#fff;cursor:pointer}
+.ctl button{touch-action:manipulation;height:56px;font-size:22px;border:0;border-radius:12px;background:var(--pr);color:#fff;cursor:pointer}
 .ctl button:nth-child(1){grid-column:2}.ctl button:nth-child(2){grid-column:1;grid-row:2}.ctl button:nth-child(3){grid-column:2;grid-row:2}.ctl button:nth-child(4){grid-column:3;grid-row:2}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
 #modal.on{display:flex}
@@ -36,6 +37,27 @@ h1{font-size:clamp(20px,5vw,28px);margin:0 0 4px;text-align:center}
 textarea{width:100%;height:80px;border:1px solid var(--bd);border-radius:8px;padding:8px;background:var(--bg);color:var(--tx);font:inherit}
 article{margin-top:28px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:6px 20px 14px}
 article h2{font-size:18px;color:var(--pr);margin:18px 0 6px}article h3{font-size:15px;margin:12px 0 2px}article p,article li{font-size:15px}
+@media (max-width:700px){
+ body{padding:10px}
+ .sub{font-size:12px;margin-bottom:8px}
+ .game{gap:10px}
+ .play-area{flex-basis:100%;width:100%}
+ #board{width:min(440px,100%,max(200px,calc(100svh - 250px)))}
+ .cell{font-size:clamp(16px,4.5vw,28px);min-width:0;min-height:0}
+ .ctl{grid-template-columns:repeat(3,56px);gap:6px;margin:8px 0 0}
+ .ctl button{height:44px}
+ .side{max-width:440px;width:100%;flex-basis:100%}
+}
+@media (max-width:1000px) and (max-height:500px) and (orientation:landscape){
+ body{padding:8px}
+ h1{font-size:20px}
+ .sub{font-size:12px;margin-bottom:6px}
+ .play-area{flex-basis:100%}
+ .side{flex-basis:100%;max-width:600px}
+ .play-area{flex-direction:row;justify-content:center;gap:24px;align-items:center}
+ #board{width:min(440px,calc(100svh - 120px));flex-shrink:0}
+ .ctl{margin:0}
+}
 </style>
 </head>
 <body>
@@ -44,14 +66,16 @@ article h2{font-size:18px;color:var(--pr);margin:18px 0 6px}article h3{font-size
 <p class="sub">Leve a água até a horta comunitária antes do pôr do sol. Cada escolha no caminho diz algo sobre o que você valoriza.</p>
 <p class="sub"><a href="index.html">Jogar a primeira versão: Labirinto Maker</a></p>
 <div class="game">
+ <div class="play-area">
  <div id="board"></div>
+<div class="ctl"><button id="u" aria-label="Mover para cima">⬆️</button><button id="l" aria-label="Mover para a esquerda">⬅️</button><button id="d" aria-label="Mover para baixo">⬇️</button><button id="r" aria-label="Mover para a direita">➡️</button></div>
+ </div>
  <div class="side">
   <div class="box"><h3>⏱ Tempo até o pôr do sol</h3><div id="time" style="font-size:20px;font-weight:700"></div><div id="status"></div></div>
   <div class="box"><h3>💻 Código gerado</h3><div id="code"></div></div>
   <div class="box"><h3>🧭 Perfil de valores (não é pontuação)</h3><div id="vals"></div></div>
  </div>
 </div>
-<div class="ctl"><button id="u">⬆️</button><button id="l">⬅️</button><button id="d">⬇️</button><button id="r">➡️</button></div>
 
 <article>
 <h2>Como as noções de axiologia permeiam o jogo</h2>
